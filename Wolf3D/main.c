@@ -161,23 +161,25 @@ float distanceBetweenPoints(float x1, float y1, float x2, float y2) {
 
 void castRay(float rayAngle, int stripId) {
     rayAngle = normalizeAngle(rayAngle);
+    
     int isRayFacingDown = rayAngle > 0 && rayAngle < PI;
     int isRayFacingUp = !isRayFacingDown;
+
     int isRayFacingRight = rayAngle < 0.5 * PI || rayAngle > 1.5 * PI;
-    int isRayFacingLeft = rayAngle = !isRayFacingRight;
+    int isRayFacingLeft = !isRayFacingRight;
     
     float xintercept, yintercept;
     float xstep, ystep;
 
-//    ///////////////////////////////////////////
-//    // HORIZONTAL RAY-GRID INTERSECTION CODE
-//    ///////////////////////////////////////////
+    ///////////////////////////////////////////
+    // HORIZONTAL RAY-GRID INTERSECTION CODE
+    ///////////////////////////////////////////
     int foundHorzWallHit = FALSE;
     float horzWallHitX = 0;
     float horzWallHitY = 0;
     int horzWallContent = 0;
 
-    // Find the y-coordinate of the closest horizontal grid intersenction
+    // Find the y-coordinate of the closest horizontal grid intersection
     yintercept = floor(player.y / TILE_SIZE) * TILE_SIZE;
     yintercept += isRayFacingDown ? TILE_SIZE : 0;
 
@@ -199,26 +201,20 @@ void castRay(float rayAngle, int stripId) {
     while (nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT) {
         float xToCheck = nextHorzTouchX;
         float yToCheck = nextHorzTouchY + (isRayFacingUp ? -1 : 0);
-
-        if(mapHasWallAt(xToCheck, yToCheck)) {
+        
+        if (mapHasWallAt(xToCheck, yToCheck)) {
+            // found a wall hit
             horzWallHitX = nextHorzTouchX;
             horzWallHitY = nextHorzTouchY;
-            horzWallContent = map[
-                                  (int)floor(yToCheck/TILE_SIZE)
-                                 ]
-                                 [
-                                  (int)
-                                  floor(xToCheck/TILE_SIZE)
-                                 ];
+            horzWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
             foundHorzWallHit = TRUE;
             break;
-        }
-        else {
+        } else {
             nextHorzTouchX += xstep;
             nextHorzTouchY += ystep;
         }
     }
-
+    
     ///////////////////////////////////////////
     // VERTICAL RAY-GRID INTERSECTION CODE
     ///////////////////////////////////////////
@@ -227,20 +223,20 @@ void castRay(float rayAngle, int stripId) {
     float vertWallHitY = 0;
     int vertWallContent = 0;
 
-    // Find the x-coordinate of the closest vertical grid intersection
+    // Find the x-coordinate of the closest horizontal grid intersection
     xintercept = floor(player.x / TILE_SIZE) * TILE_SIZE;
     xintercept += isRayFacingRight ? TILE_SIZE : 0;
 
     // Find the y-coordinate of the closest horizontal grid intersection
-    yintercept = player.y + (xintercept - player.x) / tan(rayAngle);
+    yintercept = player.y + (xintercept - player.x) * tan(rayAngle);
 
     // Calculate the increment xstep and ystep
     xstep = TILE_SIZE;
     xstep *= isRayFacingLeft ? -1 : 1;
 
-    ystep = TILE_SIZE / tan(rayAngle);
-    ystep *= (isRayFacingUp && xstep > 0) ? -1 : 1;
-    ystep *= (isRayFacingDown && xstep < 0) ? -1 : 1;
+    ystep = TILE_SIZE * tan(rayAngle);
+    ystep *= (isRayFacingUp && ystep > 0) ? -1 : 1;
+    ystep *= (isRayFacingDown && ystep < 0) ? -1 : 1;
 
     float nextVertTouchX = xintercept;
     float nextVertTouchY = yintercept;
@@ -250,41 +246,39 @@ void castRay(float rayAngle, int stripId) {
         float xToCheck = nextVertTouchX + (isRayFacingLeft ? -1 : 0);
         float yToCheck = nextVertTouchY;
         
-        if(mapHasWallAt(xToCheck, yToCheck)) {
+        if (mapHasWallAt(xToCheck, yToCheck)) {
+            // found a wall hit
             vertWallHitX = nextVertTouchX;
             vertWallHitY = nextVertTouchY;
-            vertWallContent = map[
-                                  (int)floor(yToCheck/TILE_SIZE)
-                                 ]
-                                 [
-                                  (int)
-                                  floor(xToCheck/TILE_SIZE)
-                                 ];
+            vertWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
             foundVertWallHit = TRUE;
-            
-        }
-        else {
+            break;
+        } else {
             nextVertTouchX += xstep;
             nextVertTouchY += ystep;
         }
     }
-    
-    //Calculate both horizontal and vertical hit distances and choose the smallest one.
-    float horz = foundHorzWallHit ? distanceBetweenPoints(player.x, player.y, horzWallHitY, horzWallHitY) : INT_MAX;
-    float vert = foundVertWallHit ? distanceBetweenPoints(player.x, player.y, vertWallHitX, vertWallHitY) : INT_MAX;
-    if(vert < horz) {
-        rays[stripId].distance = vert;
+
+    // Calculate both horizontal and vertical hit distances and choose the smallest one
+    float horzHitDistance = foundHorzWallHit
+        ? distanceBetweenPoints(player.x, player.y, horzWallHitX, horzWallHitY)
+        : INT_MAX;
+    float vertHitDistance = foundVertWallHit
+        ? distanceBetweenPoints(player.x, player.y, vertWallHitX, vertWallHitY)
+        : INT_MAX;
+
+    if (vertHitDistance < horzHitDistance) {
+        rays[stripId].distance = vertHitDistance;
         rays[stripId].wallHitX = vertWallHitX;
         rays[stripId].wallHitY = vertWallHitY;
-        rays[stripId].wasHitVertical = TRUE;
         rays[stripId].wallHitContent = vertWallContent;
-    }
-    else {
-        rays[stripId].distance = horz;
+        rays[stripId].wasHitVertical = TRUE;
+    } else {
+        rays[stripId].distance = horzHitDistance;
         rays[stripId].wallHitX = horzWallHitX;
         rays[stripId].wallHitY = horzWallHitY;
-        rays[stripId].wasHitVertical = FALSE;
         rays[stripId].wallHitContent = horzWallContent;
+        rays[stripId].wasHitVertical = FALSE;
     }
     rays[stripId].rayAngle = rayAngle;
     rays[stripId].isRayFacingDown = isRayFacingDown;
