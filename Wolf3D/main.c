@@ -56,6 +56,7 @@ SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 Uint32* colorBuffer = NULL;
 SDL_Texture* colorBufferTexture = NULL;
+Uint32* wallTexture = NULL;
 int isGameRunning = FALSE;
 int ticksLastFrame;
 
@@ -115,6 +116,11 @@ void setup() {
                                           WINDOW_WIDTH,
                                           WINDOW_HEIGHT
                                           );
+    wallTexture = (Uint32*) malloc(sizeof(Uint32) * (Uint32)(TEXTURE_WIDTH * TEXTURE_HEIGHT));
+    for(int x = 0; x < TEXTURE_WIDTH; x++)
+        for(int y = 0; y < TEXTURE_HEIGHT; y++) {
+            wallTexture[y*TEXTURE_WIDTH + x] = (x%8 && y%8) ? 0xff0000ff : 0xff000000;
+        }
 }
 
 int mapHasWallAt(float x, float y) {
@@ -414,8 +420,22 @@ void generate3DProjection() {
         for(int y = 0; y < wallTopPixel; y++)
             colorBuffer[(WINDOW_WIDTH)*y + i] = 0xff333333;
         
+        //Calculate X offset.
+        int textureOffsetX;
+        if(rays[i].wasHitVertical) {
+            textureOffsetX = (int)rays[i].wallHitY % TILE_SIZE;
+        }
+        else {
+            textureOffsetX = (int)rays[i].wallHitX % TILE_SIZE;
+        }
+        
+        
         for(int y = wallTopPixel; y < wallBottomPixel; y++) {
-            colorBuffer[WINDOW_WIDTH * y + i] = rays[i].wasHitVertical ? 0xffffffff : 0xffcccccc;
+            //TODO: Calculate texture Offset Y.
+            int distanceFromTop = (y + (wallStripHeight/2) - (WINDOW_HEIGHT/2));
+            int textureOffsetY = distanceFromTop * ((float)TEXTURE_HEIGHT/wallStripHeight);
+            Uint32 texelColor = wallTexture[(TEXTURE_WIDTH * textureOffsetY) + textureOffsetX];
+            colorBuffer[WINDOW_WIDTH * y + i] = texelColor;
         }
         
         for(int y = wallBottomPixel; y < WINDOW_HEIGHT; y++)
