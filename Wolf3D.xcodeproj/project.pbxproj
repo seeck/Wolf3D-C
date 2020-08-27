@@ -24,6 +24,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8CD87C0624F8767700AE7531 /* textures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = textures.h; sourceTree = "<group>"; };
 		8CF2133A24EF34DA00715839 /* Wolf3D */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Wolf3D; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CF2133D24EF34DA00715839 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8CF2134524EF371600715839 /* libSDL2-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL2-2.0.0.dylib"; path = "../../../../../usr/local/Cellar/sdl2/2.0.12_1/lib/libSDL2-2.0.0.dylib"; sourceTree = "<group>"; };
@@ -62,6 +63,7 @@
 		8CF2133C24EF34DA00715839 /* Wolf3D */ = {
 			isa = PBXGroup;
 			children = (
+				8CD87C0624F8767700AE7531 /* textures.h */,
 				8CF2133D24EF34DA00715839 /* main.c */,
 				8CF2134724EF37C000715839 /* constants.h */,
 			);

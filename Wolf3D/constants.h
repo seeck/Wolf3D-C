@@ -34,4 +34,6 @@
 #define FPS 60
 #define FRAME_TIME_LENGTH (1000 / FPS)
 
+#define NUM_TEXTURES 8
+
 #endif /* constants_h */
